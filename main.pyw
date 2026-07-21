@@ -1,7 +1,8 @@
 # Space Audio Player — Pygame Edition
 # Copyright (c) 2026 Oleg
 # Licensed under the MIT License
-    
+#zhtnya kakashka
+
 import pygame as pg
 from pygame_addiction import Root, Key, Button
 from colors import colors
