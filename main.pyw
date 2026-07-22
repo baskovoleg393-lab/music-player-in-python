@@ -40,7 +40,11 @@ index_music = 0
 current_position = 0
 total_duration = 1
 
-full_playlists = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
+if os.path.exists(path):
+    full_playlists = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
+    full_playlists.sort()
+else:
+    full_playlists = []
 full_playlists.sort()
 
 full_musics = []
@@ -48,9 +52,11 @@ full_musics = []
 def update_music_list():
     global full_musics
     if full_playlists:
-        playlist_path = os.path.join(path, full_playlists[index_playlist])
-        full_musics = [f for f in os.listdir(playlist_path) if f.endswith(('.mp3', '.wav', '.ogg'))]
-        full_musics.sort()
+        try:
+            full_musics = [f for f in os.listdir(path + full_playlists[index_playlist]) if f.endswith(('.mp3', '.wav', '.ogg'))]
+            full_musics.sort()
+        except PermissionError:
+            full_musics = []
     else:
         full_musics = []
 
@@ -84,6 +90,7 @@ buttons.append(Button(261, 245, btn_width, btn_height, "-"))
 buttons.append(Button(403, 130, btn_width, btn_height, ">>"))
 buttons.append(Button(253, 130, btn_width, btn_height, "<<"))
 buttons.append(Button(310, 285, 80, btn_height, "fixed"))
+buttons.append(Button(SIZE[0]-50, 30, 50, 30, "-"))
 
 def load_and_play():
     global music_loaded, is_playing, current_position, total_duration
@@ -229,6 +236,9 @@ def main():
             fixed = not fixed
             buttons[7].text = "fixed" if not fixed else "unfixed"
 
+        if buttons[8].handle_event(event):
+            pg.display.iconify()
+
     root.screen.blit(background, (0, 0))
     for pos in stars:
         pg.draw.circle(root.screen, colors.white(), pos, randint(1, 2))
@@ -281,5 +291,6 @@ if full_musics:
 
 root = Root(main=main, size=SIZE, fps=data["fps"])
 
+#root.Start()
 if (err:=root.Start()) != None:
     input(err.args)

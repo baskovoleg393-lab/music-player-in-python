@@ -1,21 +1,21 @@
 {
-    "path": "c:/",
+    "path": "c:/users/user/desktop/musics",
     "fps": 60,
     "keys":{
-        "need":"ctrl",
+        "need":["ctrl"],
 
-        "plus volume":"up",
-        "minus volume":"down",
+        "plus volume":["up"],
+        "minus volume":["down"],
 
-        "plus music":"right",
-        "minus music":"left",
+        "plus music":["right"],
+        "minus music":["left"],
 
-        "plus playlist":"alt + right",
-        "minus playlist":"alt + left",
+        "plus playlist":["alt", "right"],
+        "minus playlist":["alt","left"],
 
-        "stop":"space",
+        "stop":["space"],
 
-        "fixed":"`",
+        "fixed":["`"],
 
         "buff in game":"alt + f4"
     }

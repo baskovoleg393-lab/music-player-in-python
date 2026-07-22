@@ -1,7 +1,6 @@
 # Space Audio Player — Pygame Edition
 # Copyright (c) 2026 Oleg
 # Licensed under the MIT License
-# https://github.com
 
 from typing import Any
 

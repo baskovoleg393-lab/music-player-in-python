@@ -1,7 +1,31 @@
+# Space Audio Player — Pygame Edition
+# Copyright (c) 2026 Oleg
+# Licensed under the MIT License
+
 from colors import colors
 import pygame as pg
 from time import sleep
 import keyboard as key
+
+LAYOUT_MAP = {
+    "a": "ф", "b": "и", "c": "с", "d": "в", "e": "у", "f": "а", "g": "п", "h": "р",
+    "i": "ш", "j": "о", "k": "л", "l": "д", "m": "ь", "n": "т", "o": "щ", "p": "з",
+    "q": "й", "r": "к", "s": "ы", "t": "е", "u": "г", "v": "м", "w": "ц", "x": "ч",
+    "y": "н", "z": "я",
+    "A": "Ф", "B": "И", "C": "С", "D": "В", "E": "У", "F": "А", "G": "П", "H": "Р",
+    "I": "Ш", "J": "О", "K": "Л", "L": "Д", "M": "Ь", "N": "Т", "O": "Щ", "P": "З",
+    "Q": "Й", "R": "К", "S": "Ы", "T": "Е", "U": "Г", "V": "М", "W": "Ц", "X": "Ч",
+    "Y": "Н", "Z": "Я",
+    "`": "ё", "~": "Ё",
+    "[": "х", "]": "ъ",
+    "{": "Х", "}": "Ъ",
+    ";": "ж", "'": "э",
+    ":": "Ж", '"': "Э",
+    ",": "б", ".": "ю",
+    "<": "Б", ">": "Ю",
+    "/": ".", "?": ",",
+    "&": "?",
+}
 
 class Root:
     def __init__(self, main = lambda:None, size = (500, 500), background = colors.black, fps = 60):
@@ -40,7 +64,14 @@ class Key:
         self.old_press = False
 
     def update(self):
-        self.press = key.is_pressed(self.name)
+        try:
+            self.press = all([key.is_pressed(i) for i in self.name])
+        except:
+            try:
+                self.press = all([key.is_pressed(LAYOUT_MAP.get(i, i)) for i in self.name])
+            except Exception as e:
+                self.press = False
+                print(e.args)
 
         self.up = not self.press and self.old_press
         self.down = self.press and not self.old_press
@@ -70,4 +101,3 @@ class Button:
             if self.rect.collidepoint(event.pos):
                 return True
         return False
-
