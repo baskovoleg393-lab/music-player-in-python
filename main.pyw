@@ -237,7 +237,7 @@ def main():
         text = small_font.render(full_playlists[index_playlist], True, (100, 200, 255))
         root.screen.blit(text, (65, 55))
     else:
-        text = font.render("нет плейлиста", True, (255, 100, 100))
+        text = font.render("no playlist", True, (255, 100, 100))
         root.screen.blit(text, (65, 80))
         return
     
@@ -261,7 +261,7 @@ def main():
         total_time_text = small_font.render(f"{minutes:02d}:{seconds:02d}", True, (200, 200, 200))
         root.screen.blit(total_time_text, (595, 162))
     else:
-        text = font.render("нет музыки", True, (255, 200, 100))
+        text = font.render("no music", True, (255, 200, 100))
         root.screen.blit(text, (65, 80))
     
     pos_in_button = False
