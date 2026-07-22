@@ -89,7 +89,7 @@ The application requires the `pygame` and `keyboard` libraries. Install them usi
 
 ```bash
 pip install pygame keyboard
-pip install pygame pygame
+pip install pygame
 ```
 
 > ⚠️ **Important:** The `keyboard` module intercepts keystrokes globally at the system level. Because of this, on some operating systems (like Linux or under strict Windows policies), running the script with administrator privileges might be required for the hotkeys to work.
@@ -135,3 +135,7 @@ python colors.py
 ### 3. Application shows "No playlists found"
 * **Reason:** The path specified in your local `data.json` file is incorrect, or the folder does not contain any subdirectories.
 * **Solution:** Open `data.json` and verify that the `"path"` value uses proper forward slashes (e.g., `C:/Users/Name/Music`) and points to folders containing `.mp3`, `.wav`, or `.ogg` tracks.
+
+### 4. "Failed to load Python DLL" error on launch
+* **Reason:** You are trying to run `main.exe` directly inside the compressed `.zip` or `.rar` archive without extracting it first. Windows cannot link the executable to the `_internal` dependency folder while it remains compressed.
+* **Solution:** Right-click the downloaded archive, select **"Extract All..."**, navigate to the newly unpacked regular folder, and run `main.exe` from there.
