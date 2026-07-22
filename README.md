@@ -1,4 +1,4 @@
-# 🎵 Space Audio Player (Pygame Edition)
+# 🎵 Music Player in Python (Pygame Edition)
 
 A stylish audio player with a custom graphical interface and no standard window borders (Frameless UI), developed in **Python** using the **Pygame** and **Keyboard** libraries.
 
@@ -121,3 +121,17 @@ python main.pyw
 ```bash
 python colors.py
 ```
+
+## 🛠️ Troubleshooting
+
+### 1. Global hotkeys are not working
+* **Reason:** The `keyboard` library requires low-level system access to intercept keystrokes when the application window is minimized. Windows 11 security policies often block this by default.
+* **Solution:** Close the player and run `main.exe` (or your terminal/VS Code) **as Administrator**.
+
+### 2. The player window closes silently without any message
+* **Reason:** A corrupted or unsupported audio file layout inside your music directories might be crashing the `pygame.mixer`.
+* **Solution:** Check the terminal input prompt. The custom engine wrapper catches runtime exceptions and dumps the crash logs into `input(err.args)` instead of crashing silently.
+
+### 3. Application shows "No playlists found"
+* **Reason:** The path specified in your local `data.json` file is incorrect, or the folder does not contain any subdirectories.
+* **Solution:** Open `data.json` and verify that the `"path"` value uses proper forward slashes (e.g., `C:/Users/Name/Music`) and points to folders containing `.mp3`, `.wav`, or `.ogg` tracks.
