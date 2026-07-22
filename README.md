@@ -38,25 +38,34 @@ You can control the player either with your mouse using the GUI buttons or via t
 ```text
 📁 space-audio-player/
 │
-├── 📁 build/                 # Pre-compiled application folder
-│   ├── 📄 main.exe           # Executable file for Windows
-│   └── 📄 data.json          # Configuration file
+├── 📁 build/                   # Pre-compiled application folder
+│   ├── 📁 _internal/           # Binary dependencies and core libraries
+│   ├── 📄 main.exe             # Executable file for Windows
+│   ├── 📄 pygame_addiction.py  # Custom engine wrapper and GUI components
+│   ├── 📄 colors.py            # Color palette and converters
+│   ├── 📄 data.json            # Configuration file
+│   ├── 📄 font.ttf             # Custom font asset for the user interface
+│   ├── 🖼️ cursor_static.png    # Normal cursor texture (20x20)
+│   └── 🖼️ cursor_load.png      # Hover cursor texture (20x20)
+│
 ├── 📄 main.pyw               # Main player script (UI, playlist logic)
-├── 📄 pygame_addiction.py    # Root game loop wrapper, Key logic, and custom Button class
-├── 📄 colors.py              # Color palette class with RGB/HEX tools and test mode
+├── 📄 pygame_addiction.py    # Custom engine wrapper and GUI components
+├── 📄 colors.py              # Color palette and converters
 ├── 📄 font.ttf               # Custom font asset for the user interface
 ├── 🖼️ cursor_static.png      # Normal cursor texture (20x20)
+│   📄 data.json              # Configuration file
 └── 🖼️ cursor_load.png        # Hover cursor texture (20x20)
+
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### 📦 Option A: No Python Required (Pre-built Executable)
+### 📦 Option A: Pre-built Executable (No Python Required)
 
-#### 1. Extract the Application
-Go to the `build.rar` archive and open the `build` folder.
+#### 1. Open the Application Folder
+Go straight into the `build` folder.
 
 #### 2. Configuration Setup (`data.json`)
 Before running the player for the first time, make sure your `data.json` file points to the correct path of your music collection:
