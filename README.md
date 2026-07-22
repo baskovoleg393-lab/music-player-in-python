@@ -64,18 +64,7 @@ Before running the player for the first time, make sure your `data.json` file po
 ```json
 {
     "path": "C:/path/to/your/music/folder",
-    "fps": 60,
-    "keys": {
-        "need": "ctrl",
-        "plus volume": "up",
-        "minus volume": "down",
-        "plus music": "right",
-        "minus music": "left",
-        "plus playlist": "alt + right",
-        "minus playlist": "alt + left",
-        "stop": "space",
-        "fixed": "`"
-    }
+    ...
 }
 ```
 
@@ -96,7 +85,17 @@ pip install pygame pygame
 
 > ⚠️ **Important:** The `keyboard` module intercepts keystrokes globally at the system level. Because of this, on some operating systems (like Linux or under strict Windows policies), running the script with administrator privileges might be required for the hotkeys to work.
 
-#### 2. Launching the Player
+#### 2. Configuration Setup (`data.json`)
+Before running the player for the first time, make sure your `data.json` file points to the correct path of your music collection:
+
+```json
+{
+    "path": "C:/path/to/your/music/folder",
+    ...
+}
+```
+
+#### 3. Launching the Player
 Run the main file. The `.pyw` extension allows the program to run in the background without opening a black Windows console window:
 
 ```bash
