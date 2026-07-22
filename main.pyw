@@ -7,6 +7,7 @@ from pygame_addiction import Root, Key, Button
 from colors import colors
 import os
 import json
+import math
 from random import randint
 
 pg.init()
@@ -293,4 +294,4 @@ root = Root(main=main, size=SIZE, fps=data["fps"])
 
 #root.Start()
 if (err:=root.Start()) != None:
-    input(err.args)
+    print(err.args)

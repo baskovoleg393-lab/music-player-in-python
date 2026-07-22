@@ -47,6 +47,8 @@ class Root:
                 self.main()
             except Exception as e:
                 return e
+            except KeyboardInterrupt:
+                return e
 
             pg.display.flip()
             self.screen.fill(self.background())
