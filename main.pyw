@@ -3,32 +3,23 @@ from pygame_addiction import Root, Key, Button
 from colors import colors
 import os
 import json
-import math
 from random import randint
 
 pg.init()
 pg.mixer.init()
 pg.mouse.set_visible(False)
 
-W, H = 500, 500
+with open('data.json', 'r', encoding='utf-8') as file:
+    data = json.load(file)
+
+W, H = data["size"][0], data["size"][1]
 SIZE = (W, H)
 
 cursor_static_screen = pg.transform.scale(pg.image.load("cursor_static.png"), (20, 20))
 cursor_load_screen = pg.transform.scale(pg.image.load("cursor_load.png"), (20, 20))
 
-background = pg.Surface(SIZE)
-pg.draw.rect(background, (0, 0, 0, 50), (int(W*0.043), int(H*0.079), int(W*0.914), int(H*0.842)), border_radius=50)
-pg.draw.rect(background, (100, 100, 150), (int(W*0.043), int(H*0.079), int(W*0.914), int(H*0.842)), 2, border_radius=50)
-
-stars = []
-for i in range(W//20 + H//20):
-    stars.append([randint(0, W), randint(0, H)])
-
 font = pg.font.Font(None, int(H*0.089))
 small_font = pg.font.Font(None, int(H*0.058))
-
-with open('data.json', 'r', encoding='utf-8') as file:
-    data = json.load(file)
 
 path = data["path"] + "/"
 
@@ -75,20 +66,6 @@ music_loaded = False
 fixed = False
 pos_in_button = False
 
-buttons = []
-btn_width = int(W*0.063)
-btn_height = int(H*0.063)
-
-buttons.append(Button(int(W*0.443), int(H*0.645), int(W*0.114), int(H*0.063), "pause"))
-buttons.append(Button(int(W*0.433), int(H*0.342), btn_width, btn_height, "<"))
-buttons.append(Button(int(W*0.504), int(H*0.342), btn_width, btn_height, ">"))
-buttons.append(Button(int(W*0.590), int(H*0.566), btn_width, btn_height, "+"))
-buttons.append(Button(int(W*0.36), int(H*0.566), btn_width, btn_height, "-"))
-buttons.append(Button(int(W*0.576), int(H*0.342), btn_width, btn_height, ">>"))
-buttons.append(Button(int(W*0.361), int(H*0.342), btn_width, btn_height, "<<"))
-buttons.append(Button(int(W*0.443), int(H*0.750), int(W*0.114), int(H*0.063), "fixed"))
-buttons.append(Button(W-int(W*0.071), int(H*0.079), int(W*0.071), int(H*0.079), "-"))
-
 def load_and_play():
     global music_loaded, is_playing, current_position, total_duration
     if full_playlists and full_musics:
@@ -113,8 +90,74 @@ def draw_progress_bar(screen, x, y, w, h, progress):
     pg.draw.rect(screen, (0, 200, 255), (x, y, w * progress, h), border_radius=10)
     pg.draw.rect(screen, (100, 100, 150), (x, y, w, h), 2, border_radius=10)
 
-def main():
+def handle_action(action):
     global index_playlist, index_music, current_volume, is_playing, music_loaded, current_position, fixed, total_duration
+    match action:
+        case "vol down":
+            current_volume = min(1.0, current_volume - 0.1)
+            pg.mixer.music.set_volume(current_volume)
+        case "vol up":
+            current_volume = max(0.0, current_volume + 0.1)
+            pg.mixer.music.set_volume(current_volume)
+        case "pause":
+            if is_playing:
+                pg.mixer.music.pause()
+                is_playing = False
+                buttons[0].text = "unpause"
+            else:
+                pg.mixer.music.unpause()
+                is_playing = True
+                buttons[0].text = "pause"
+        case "music up":
+            index_music = (index_music + 1) % len(full_musics)
+            fixed = False
+            load_and_play()
+        case "music down":
+            index_music = (index_music - 1) % len(full_musics)
+            fixed = False
+            load_and_play()
+        case "playlist up":
+            index_playlist = (index_playlist + 1) % len(full_playlists)
+            index_music = 0
+            update_music_list()
+            if full_musics:
+                load_and_play()
+        case "playlist down":
+            index_playlist = (index_playlist - 1) % len(full_playlists)
+            index_music = 0
+            update_music_list()
+            if full_musics:
+                load_and_play()
+        case "fixed":
+            fixed = not fixed
+            buttons[7].text = "fixed" if not fixed else "unfixed"                
+
+def update_gui():
+    global stars, background, buttons
+    stars = []
+    for _ in range(W//20 + H//20):
+        stars.append([randint(0, W), randint(0, H)])
+
+    background = pg.Surface(SIZE)
+    pg.draw.rect(background, (0, 0, 0, 50), (int(W*0.043), int(H*0.079), int(W*0.914), int(H*0.842)), border_radius=50)
+    pg.draw.rect(background, (100, 100, 150), (int(W*0.043), int(H*0.079), int(W*0.914), int(H*0.842)), 2, border_radius=50)
+
+    buttons = []
+    btn_width = int(W*0.063)
+    btn_height = int(H*0.063)
+
+    buttons.append(Button(int(W*0.443), int(H*0.645), int(W*0.114), int(H*0.063), "pause"))
+    buttons.append(Button(int(W*0.433), int(H*0.342), btn_width, btn_height, "<"))
+    buttons.append(Button(int(W*0.504), int(H*0.342), btn_width, btn_height, ">"))
+    buttons.append(Button(int(W*0.590), int(H*0.566), btn_width, btn_height, "+"))
+    buttons.append(Button(int(W*0.36), int(H*0.566), btn_width, btn_height, "-"))
+    buttons.append(Button(int(W*0.576), int(H*0.342), btn_width, btn_height, ">>"))
+    buttons.append(Button(int(W*0.361), int(H*0.342), btn_width, btn_height, "<<"))
+    buttons.append(Button(int(W*0.443), int(H*0.750), int(W*0.114), int(H*0.063), "fixed"))
+    buttons.append(Button(W-int(W*0.16), int(H*0.11), int(W*0.071), int(H*0.079), "-"))
+
+def update():
+    global is_playing, index_music, W, H, SIZE, current_position, background
 
     for key in [key_plus_volume, key_minus_volume, key_minus_music,
                 key_plus_music, key_minus_playlist, key_plus_playlist,
@@ -122,51 +165,22 @@ def main():
         key.update()
     
     if key_plus_volume.down and key_need.press:
-        current_volume = min(1.0, current_volume + 0.1)
-        pg.mixer.music.set_volume(current_volume)
-    
+        handle_action("vol up")
     if key_minus_volume.down and key_need.press:
-        current_volume = max(0.0, current_volume - 0.1)
-        pg.mixer.music.set_volume(current_volume)
-
+        handle_action("vol down")
     if key_stop.down and key_need.press:
-        if is_playing:
-            pg.mixer.music.pause()
-            is_playing = False
-            buttons[0].text = "unpause"
-        else:
-            pg.mixer.music.unpause()
-            is_playing = True
-            buttons[0].text = "pause"
-    
+        handle_action("pause")
     if key_plus_music.down and full_musics and key_need.press:
-        index_music = (index_music + 1) % len(full_musics)
-        fixed = False
-        load_and_play()
-    
+        handle_action("music up")
     if key_minus_music.down and full_musics and key_need.press:
-        index_music = (index_music - 1) % len(full_musics)
-        fixed = False
-        load_and_play()
-    
+        handle_action("music down")
     if key_plus_playlist.down and full_playlists and key_need.press:
-        index_playlist = (index_playlist + 1) % len(full_playlists)
-        index_music = 0
-        update_music_list()
-        if full_musics:
-            load_and_play()
-    
+        handle_action("playlist up")
     if key_minus_playlist.down and full_playlists and key_need.press:
-        index_playlist = (index_playlist - 1) % len(full_playlists)
-        index_music = 0
-        update_music_list()
-        if full_musics:
-            load_and_play()
-
+        handle_action("playlist down")
     if key_fixed.down and full_playlists and key_need.press:
-        fixed = not fixed
-        buttons[7].text = "fixed" if not fixed else "unfixed"
-    
+        handle_action("fixed")    
+
     if music_loaded and is_playing and not pg.mixer.music.get_busy():
         is_playing = False
         current_position = total_duration
@@ -183,53 +197,33 @@ def main():
             pg.quit()
             exit()
 
+        if event.type == pg.VIDEORESIZE:
+            W, H = SIZE = event.size
+            update_gui()
+
         if buttons[0].handle_event(event):
-            if is_playing:
-                buttons[0].text = "unpause"
-                pg.mixer.music.pause()
-                is_playing = False
-            else:
-                buttons[0].text = "pause"
-                pg.mixer.music.unpause()
-                is_playing = True
+            handle_action("pause")
         
         if buttons[1].handle_event(event) and full_musics:
-            index_music = (index_music - 1) % len(full_musics)
-            fixed = False
-            load_and_play()
-        
+            handle_action("music down")
+            
         if buttons[2].handle_event(event) and full_musics:
-            index_music = (index_music + 1) % len(full_musics)
-            fixed = False
-            load_and_play()
-        
+            handle_action("music up")
+
         if buttons[3].handle_event(event):
-            current_volume = min(1.0, current_volume + 0.1)
-            pg.mixer.music.set_volume(current_volume)
+            handle_action("vol up")
         
         if buttons[4].handle_event(event):
-            current_volume = max(0.0, current_volume - 0.1)
-            pg.mixer.music.set_volume(current_volume)
+            handle_action("vol down")
         
         if buttons[5].handle_event(event) and full_playlists:
-            index_playlist = (index_playlist + 1) % len(full_playlists)
-            fixed = False
-            index_music = 0
-            update_music_list()
-            if full_musics:
-                load_and_play()
-        
+            handle_action("playlist up")        
+
         if buttons[6].handle_event(event) and full_playlists:
-            index_playlist = (index_playlist - 1) % len(full_playlists)
-            fixed = False
-            index_music = 0
-            update_music_list()
-            if full_musics:
-                load_and_play()
+            handle_action("playlist down")
 
         if buttons[7].handle_event(event) and full_playlists:
-            fixed = not fixed
-            buttons[7].text = "fixed" if not fixed else "unfixed"
+            handle_action("fixed")
 
         if buttons[8].handle_event(event):
             pg.display.iconify()
@@ -240,7 +234,7 @@ def main():
         
     if full_playlists:
         text = small_font.render(full_playlists[index_playlist], True, (100, 200, 255))
-        x_playlist = int(W*0.093) + (int(W*0.814) - small_font.size(full_playlists[index_playlist])[0]) // 2
+        x_playlist = (W - small_font.size(full_playlists[index_playlist])[0]) // 2
         root.screen.blit(text, (x_playlist, int(H*0.145)))
     else:
         text = font.render("no playlist", True, (255, 100, 100))
@@ -249,8 +243,8 @@ def main():
         return
     
     if full_musics:
-        text = font.render(full_musics[index_music], True, (255, 255, 255))
-        x_music = int(W*0.093) + (int(W*0.814) - font.size(full_musics[index_music])[0]) // 2
+        text = font.render(full_musics[index_music].rsplit('.', 1)[0], True, (255, 255, 255))
+        x_music = (W - font.size(full_musics[index_music].rsplit('.', 1)[0])[0]) //2
         root.screen.blit(text, (x_music, int(H*0.211)))
         
         vol_text = f"{int(current_volume * 100)}%"
@@ -287,10 +281,12 @@ def main():
         else:
             root.screen.blit(cursor_static_screen, pg.mouse.get_pos())
 
-if full_musics:
-    load_and_play()
+update_gui()
+if __name__ == "__main__":
+    if full_musics:
+        load_and_play()
 
-root = Root(main=main, size=SIZE, fps=data["fps"])
+    root = Root(main=update, size=SIZE, fps=data["fps"])
 
-if (err:=root.Start()) != None:
-    print(err.args)
+    if (err:=root.Start()) != None:
+        print(err.args)

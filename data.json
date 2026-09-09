@@ -1,6 +1,10 @@
 {
-    "path": "C:/Users/user/music",
+    "path": "c:/users/user/music",
     "fps": 60,
+    "size":[
+        500, 
+        500
+    ],
     "keys":{
         "need":["ctrl"],
 

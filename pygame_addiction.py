@@ -39,7 +39,7 @@ class Root:
         self.events = []
 
     def Start(self):
-        self.screen = pg.display.set_mode(self.size, pg.NOFRAME)
+        self.screen = pg.display.set_mode(self.size, pg.RESIZABLE)
         while self.flag:
             self.events = pg.event.get()
 
@@ -48,7 +48,7 @@ class Root:
             except Exception as e:
                 return e
             except KeyboardInterrupt:
-                return e
+                return ""
 
             pg.display.flip()
             self.screen.fill(self.background())
