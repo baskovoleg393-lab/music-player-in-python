@@ -8,9 +8,10 @@ The application scans a specified directory, automatically converting nested fol
 
 ## ✨ Key Features
 
-* **Frameless UI & Dynamic Background:** A modern minimalist borderless interface with an animated twinkling stars effect in the background.
+* **Dynamic Background:** A modern minimalist interface with an animated twinkling stars effect in the background.
 * **Custom Interactive Cursor:** The system cursor is hidden. Instead, it uses `cursor_static.png` (normal mode) and `cursor_load.png` textures (when hovering over clickable buttons).
 * **Smart Playlists:** The player automatically scans the target folder. Each subfolder becomes a separate playlist, and `.mp3`, `.wav`, and `.ogg` files inside it become tracks.
+* **Adaptive UI:** The interface adapts to any window size, keeping all elements perfectly proportioned.
 * **Global Hotkeys:** Control playback from anywhere in the system, even if the player window is minimized.
 * **"Fixed" Mode:** Ability to loop the current track so it plays continuously instead of automatically switching to the next one.
 
@@ -78,7 +79,10 @@ Before running the player for the first time, make sure your `data.json` file po
 ```
 
 #### 3. Launch the Player
-Run `main.exe` from the folder.
+Run the `main.exe` file from the folder or via cmd:
+```bash
+main.exe 
+```
 
 ---
 
@@ -89,7 +93,6 @@ The application requires the `pygame` and `keyboard` libraries. Install them usi
 
 ```bash
 pip install pygame keyboard
-pip install pygame
 ```
 
 > ⚠️ **Important:** The `keyboard` module intercepts keystrokes globally at the system level. Because of this, on some operating systems (like Linux or under strict Windows policies), running the script with administrator privileges might be required for the hotkeys to work.
@@ -105,7 +108,7 @@ Before running the player for the first time, make sure your `data.json` file po
 ```
 
 #### 3. Launching the Player
-Run the main file. The `.pyw` extension allows the program to run in the background without opening a black Windows console window:
+Run the main file. The `.pyw` extension allows the program to run in the background without opening a cmd:
 
 ```bash
 python main.pyw

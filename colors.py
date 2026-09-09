@@ -63,6 +63,7 @@ class colors:
     black = rgb(0, 0, 0, "black")
     white = rgb(255, 255, 255, "white")
     gray = rgb(128, 128, 128, "gray")
+    light_gray = rgb(187, 187, 187, "light_gray")
 
     brown = rgb(150, 75, 0, "brown")
     light_brown = rgb(181, 101, 29, "light brown")

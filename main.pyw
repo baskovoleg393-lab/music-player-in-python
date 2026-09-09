@@ -18,9 +18,6 @@ SIZE = (W, H)
 cursor_static_screen = pg.transform.scale(pg.image.load("cursor_static.png"), (20, 20))
 cursor_load_screen = pg.transform.scale(pg.image.load("cursor_load.png"), (20, 20))
 
-font = pg.font.Font(None, int(H*0.089))
-small_font = pg.font.Font(None, int(H*0.058))
-
 path = data["path"] + "/"
 
 index_playlist = 0
@@ -133,7 +130,7 @@ def handle_action(action):
             buttons[7].text = "fixed" if not fixed else "unfixed"                
 
 def update_gui():
-    global stars, background, buttons
+    global stars, background, buttons, small_font, font
     stars = []
     for _ in range(W//20 + H//20):
         stars.append([randint(0, W), randint(0, H)])
@@ -155,6 +152,9 @@ def update_gui():
     buttons.append(Button(int(W*0.361), int(H*0.342), btn_width, btn_height, "<<"))
     buttons.append(Button(int(W*0.443), int(H*0.750), int(W*0.114), int(H*0.063), "fixed"))
     buttons.append(Button(W-int(W*0.16), int(H*0.11), int(W*0.071), int(H*0.079), "-"))
+
+    font = pg.font.Font(None, int(H*0.089))
+    small_font = pg.font.Font(None, int(H*0.058))
 
 def update():
     global is_playing, index_music, W, H, SIZE, current_position, background
@@ -288,5 +288,5 @@ if __name__ == "__main__":
 
     root = Root(main=update, size=SIZE, fps=data["fps"])
 
-    if (err:=root.Start()) != None:
+    if err:=root.Start():
         print(err.args)

@@ -81,7 +81,7 @@ class Key:
         self.old_press = self.press
 
 class Button:
-    def __init__(self, x, y, w, h, text, color=(100, 100, 100), hover_color=(150, 150, 150)):
+    def __init__(self, x, y, w, h, text, color=colors.gray(), hover_color=colors.light_gray()):
         self.rect = pg.Rect(x, y, w, h)
         self.text = text
         self.color = color
@@ -90,7 +90,7 @@ class Button:
     
     def draw(self, screen):
         color = self.hover_color if self.is_hover else self.color
-        pg.draw.rect(screen, color, self.rect, border_radius=5)
+        pg.draw.rect(screen, color, self.rect, border_radius=20)
         font = pg.font.Font(None, 20)
         text = font.render(self.text, True, (255, 255, 255))
         text_rect = text.get_rect(center=self.rect.center)
