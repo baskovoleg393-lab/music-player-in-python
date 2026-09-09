@@ -10,7 +10,7 @@ pg.init()
 pg.mixer.init()
 pg.mouse.set_visible(False)
 
-W, H = 500, 500
+W, H = 1000, 1000
 SIZE = (W, H)
 
 cursor_static_screen = pg.transform.scale(pg.image.load("cursor_static.png"), (20, 20))
@@ -175,7 +175,9 @@ def main():
         load_and_play()
     
     if is_playing:
-        pos = max(0, pg.mixer.music.get_pos() / 1000)
+        pos = pg.mixer.music.get_pos() / 1000
+        if pos < 0:
+            pos = 0
         current_position = min(pos, total_duration)
     
     for event in root.events:
