@@ -69,13 +69,8 @@ You can control the player either with your mouse using the GUI buttons or via t
 
 ## 🚀 Quick Start
 
-### 📦 Option A: Pre-built Executable (No Python Required)
-
-#### 1. Open the Application Folder
-Go straight into the `build` folder.
-
-#### 2. Configuration Setup (`data.json`)
-Before running the player for the first time, make sure your `data.json` file points to the correct path of your music collection:
+### 📋 Prerequisite: Set Your Music Path
+Before running the player, you must configure the `data.json` file. Update the `"path"` field to point to your music folder:
 
 ```json
 {
@@ -84,7 +79,18 @@ Before running the player for the first time, make sure your `data.json` file po
 }
 ```
 
-#### 3. Launch the Player
+> 🔍 **Where to find `data.json`?**
+> * If you choose **Option A (Executable)**: Edit the file inside the `build/` folder.
+> * If you choose **Option B (Source Code)**: Edit the file in the root project folder.
+
+---
+
+### 📦 Option A: Pre-built Executable (No Python Required)
+
+#### 1. Open the Application Folder
+Go straight into the `build` folder.
+
+#### 2. Launch the Player
 Run the `main.exe` file from the folder or via cmd:
 ```bash
 main.exe 
@@ -103,17 +109,7 @@ pip install pygame keyboard
 
 > ⚠️ **Important:** The `keyboard` module intercepts keystrokes globally at the system level. Because of this, on some operating systems (like Linux or under strict Windows policies), running the script with administrator privileges might be required for the hotkeys to work.
 
-#### 2. Configuration Setup (`data.json`)
-Before running the player for the first time, make sure your `data.json` file points to the correct path of your music collection:
-
-```json
-{
-    "path": "C:/path/to/your/music/folder",
-    ...
-}
-```
-
-#### 3. Launching the Player
+#### 2. Launching the Player
 Run the main file. The `.pyw` extension allows the program to run in the background without opening a cmd:
 
 ```bash
