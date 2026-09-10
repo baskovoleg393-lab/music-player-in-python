@@ -4,6 +4,9 @@ A stylish audio player with a custom graphical interface and no standard window 
 
 The application scans a specified directory, automatically converting nested folders into playlists, and supports advanced control via global hotkeys.
 
+
+---
+![](photo.png)
 ---
 
 ## ✨ Key Features
@@ -32,6 +35,9 @@ You can control the player either with your mouse using the GUI buttons or via t
 | **Volume Down (-10%)** | `-` | `Down` (Down Arrow) |
 | **Loop / Unloop Track** | `fixed` / `unfixed` | `` ` `` (Tilde Key / Backtick) |
 
+
+>**Note:** You can change the hotkeys in the data.json file.
+
 ---
 
 ## 📂 Project Structure
@@ -49,13 +55,13 @@ You can control the player either with your mouse using the GUI buttons or via t
 │   ├── 🖼️ cursor_static.png    # Normal cursor texture (20x20)
 │   └── 🖼️ cursor_load.png      # Hover cursor texture (20x20)
 │
-├── 📄 main.pyw               # Main player script (UI, playlist logic)
-├── 📄 pygame_addiction.py    # Custom engine wrapper and GUI components
-├── 📄 colors.py              # Color palette and converters
-├── 📄 font.ttf               # Custom font asset for the user interface
-├── 🖼️ cursor_static.png      # Normal cursor texture (20x20)
-│   📄 data.json              # Configuration file
-└── 🖼️ cursor_load.png        # Hover cursor texture (20x20)
+├── 📄 main.pyw                 # Main player script (UI, playlist logic)
+├── 📄 pygame_addiction.py      # Custom engine wrapper and GUI components
+├── 📄 colors.py                # Color palette and converters
+├── 📄 font.ttf                 # Custom font asset for the user interface
+├── 🖼️ cursor_static.png        # Normal cursor texture (20x20)
+├── 📄 data.json                # Configuration file
+└── 🖼️ cursor_load.png          # Hover cursor texture (20x20)
 
 ```
 
