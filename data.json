@@ -1,11 +1,19 @@
 {
     "path": "c:/users/user/music",
+
     "fps": 60,
+    
     "unfocused_fps":40,
+    
+    "minimized_fps":10,
+
+    "star_update_interval":0.05,
+    
     "size":[
         500, 
         500
     ],
+    
     "keys":{
         "need":["ctrl"],
 

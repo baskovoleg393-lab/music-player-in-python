@@ -4,8 +4,8 @@
 
 from colors import colors
 import pygame as pg
-from time import sleep
 import keyboard as key
+import time
 
 LAYOUT_MAP = {
     "a": "ф", "b": "и", "c": "с", "d": "в", "e": "у", "f": "а", "g": "п", "h": "р",
@@ -43,7 +43,7 @@ class Root:
     def Start(self):
         self.screen = pg.display.set_mode(self.size, pg.RESIZABLE)
         while self.flag:
-            self.time += 1
+            self.time = time.time()
             self.events = pg.event.get()
 
             try:

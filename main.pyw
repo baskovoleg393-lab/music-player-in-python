@@ -4,6 +4,7 @@ from colors import colors
 import os
 import json
 from random import randint, shuffle, choice
+import time 
 
 pg.init()
 pg.mixer.init()
@@ -16,6 +17,7 @@ VIRTUAL_W, VIRTUAL_H = 1000, 1000
 VIRTUAL_SIZE = (VIRTUAL_W, VIRTUAL_H)
 W, H = data["size"][0], data["size"][1]
 SIZE = (W, H)
+seek_base = 0
 
 cursor_static_screen = pg.transform.scale(pg.image.load("cursor_static.png"), (20, 20))
 cursor_load_screen = pg.transform.scale(pg.image.load("cursor_load.png"), (20, 20))
@@ -27,6 +29,8 @@ index_playlist = 0
 index_music = 0
 current_position = 0
 total_duration = 1
+
+time_star = time.time()
 
 def Vx(x):
     return int(W * x / VIRTUAL_W)
@@ -101,7 +105,7 @@ fixed = False
 pos_in_button = False
 
 def load_and_play():
-    global music_loaded, is_playing, current_position, total_duration
+    global music_loaded, is_playing, current_position, total_duration, seek_base
     if full_playlists and full_musics:
         try:
             music_path = os.path.join(path, full_playlists[index_playlist], full_musics[index_music])
@@ -111,6 +115,7 @@ def load_and_play():
             music_loaded = True
             is_playing = True
             current_position = 0
+            seek_base = 0   
             total_duration = pg.mixer.Sound(music_path).get_length()
             if total_duration <= 0:
                 total_duration = 1
@@ -119,10 +124,31 @@ def load_and_play():
             music_loaded = False
             is_playing = False
 
-def draw_progress_bar(screen, x, y, w, h, progress):
-    pg.draw.rect(screen, (30, 30, 50), (x, y, w, h), border_radius=10)
-    pg.draw.rect(screen, (0, 200, 255), (x, y, w * progress, h), border_radius=10)
-    pg.draw.rect(screen, (100, 100, 150), (x, y, w, h), 2, border_radius=10)
+def seek(position_seconds):
+    global current_position, seek_base, is_playing
+    
+    if not music_loaded or not full_musics:
+        return
+    
+    position_seconds = max(0, min(position_seconds, total_duration))
+    
+    try:
+        music_path = os.path.join(path, full_playlists[index_playlist], full_musics[index_music])
+        pg.mixer.music.load(music_path)
+        pg.mixer.music.play(start=position_seconds)
+        pg.mixer.music.set_volume(current_volume)
+        current_position = position_seconds
+        seek_base = position_seconds  
+        is_playing = True
+    except Exception as e:
+        print(f"Seek error: {e}")
+
+def draw_progress_bar(screen, rect, progress):
+    x, y, w, h = rect.x, rect.y, rect.w, rect.h
+    pg.draw.rect(screen, (30, 30, 50), (x, y, w, h), border_radius=20)
+    pg.draw.rect(screen, (0, 200, 255), (x, y, w * progress, h), border_radius=20)
+    print(progress)
+    pg.draw.rect(screen, (100, 100, 150), (x, y, w, h), 5, border_radius=20)
 
 def handle_action(action):
     global index_playlist, index_music, current_volume, is_playing, music_loaded, current_position, fixed, total_duration
@@ -167,8 +193,10 @@ def handle_action(action):
             load_and_play()
 
 def update_gui():
-    global stars, background, buttons, small_font, font
+    global stars, background, buttons, small_font, font, progress_bar_rect
     update_stars()
+
+    progress_bar_rect = pg.Rect(Vx(93), Vy(472), Vx(814), Vy(67))
 
     background = pg.Surface(SIZE)
     pg.draw.rect(background, (0, 0, 0, 50), (Vx(43), Vy(79), Vx(914), Vy(870)), border_radius=50)
@@ -193,7 +221,7 @@ def update_gui():
     small_font = pg.font.Font(None, Vy(58))
 
 def update():
-    global is_playing, index_music, W, H, SIZE, current_position, background, is_rendering, star_surface
+    global is_playing, index_music, W, H, SIZE, current_position, background, is_rendering, star_surface, time_star, progress_bar_rect
 
     for key in [key_plus_volume, key_minus_volume, key_minus_music,
                 key_plus_music, key_minus_playlist, key_plus_playlist,
@@ -230,7 +258,7 @@ def update():
     
     if is_playing:
         pos = max(0, pg.mixer.music.get_pos() / 1000)
-        current_position = min(pos, total_duration)
+        current_position = min(pos + seek_base, total_duration)
     
     for event in root.events:
         if event.type == pg.QUIT:
@@ -245,6 +273,11 @@ def update():
         if event.type == pg.VIDEORESIZE:
             W, H = SIZE = event.size
             update_gui()
+
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1 and is_rendering:
+            if progress_bar_rect.collidepoint(event.pos):
+                click_x = event.pos[0] - progress_bar_rect.x
+                seek((click_x / progress_bar_rect.width) * total_duration)
 
         if buttons[0].handle_event(event):
             handle_action("pause")
@@ -285,11 +318,13 @@ def update():
     render_text(font, vol_text, (200, 255, 200))
     """
 
-    root.need_flips = is_rendering
     root.fps = data["fps"]
     if not is_active:
         root.fps = data["unfocused_fps"]
+
+    root.need_flips = is_rendering
     if not is_rendering:
+        root.fps = data["minimized_fps"]
         return
 
     minutes = int(current_position // 60)
@@ -298,7 +333,9 @@ def update():
     
     root.screen.blit(background, (0, 0))
     root.screen.blit(star_surface, (0, 0))
-    if root.time % 15 == 0:star_surface = choice(star_surfaces)
+    if root.time - time_star > data["star_update_interval"]:
+        star_surface = choice(star_surfaces)
+        time_star = root.time
         
     if full_playlists:
         text = render_text(small_font, full_playlists[index_playlist], (100, 200, 255))
@@ -321,7 +358,7 @@ def update():
         root.screen.blit(text, (x_vol, Vy(566)))
 
         progress = current_position / total_duration if total_duration > 0 else 0
-        draw_progress_bar(root.screen, Vx(93), Vy(487), Vx(814), Vy(37), min(progress, 1.0))
+        draw_progress_bar(root.screen, progress_bar_rect, min(progress, 1.0))
         
         time_text = render_text(small_font, f"{minutes:02d}:{seconds:02d}", (200, 200, 200))
         root.screen.blit(time_text, (Vx(93), Vy(426)))
