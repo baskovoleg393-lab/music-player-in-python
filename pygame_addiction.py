@@ -37,10 +37,13 @@ class Root:
         self.clock = pg.time.Clock()
         self.fps = fps
         self.events = []
+        self.need_flips = True
+        self.time = 0
 
     def Start(self):
         self.screen = pg.display.set_mode(self.size, pg.RESIZABLE)
         while self.flag:
+            self.time += 1
             self.events = pg.event.get()
 
             try:
@@ -50,8 +53,9 @@ class Root:
             except KeyboardInterrupt:
                 return ""
 
-            pg.display.flip()
-            self.screen.fill(self.background())
+            if self.need_flips:
+                pg.display.flip()
+            #self.screen.fill(self.background())
             self.clock.tick(self.fps)
 
         pg.quit()
@@ -81,16 +85,18 @@ class Key:
         self.old_press = self.press
 
 class Button:
-    def __init__(self, x, y, w, h, text, color=colors.gray(), hover_color=colors.light_gray()):
+    def __init__(self, x, y, w, h, text, color=colors.gray(), hover_color=colors.light_gray(), pressed_color=colors.blue()):
         self.rect = pg.Rect(x, y, w, h)
         self.text = text
         self.color = color
         self.hover_color = hover_color
+        self.pressed_color = pressed_color
         self.is_hover = False
-    
+        self.current_color = self.color
+
     def draw(self, screen):
-        color = self.hover_color if self.is_hover else self.color
-        pg.draw.rect(screen, color, self.rect, border_radius=20)
+        self.current_color = (self.hover_color if not pg.mouse.get_pressed()[0] else self.pressed_color) if self.is_hover else self.color
+        pg.draw.rect(screen, self.current_color, self.rect, border_radius=20)
         font = pg.font.Font(None, 20)
         text = font.render(self.text, True, (255, 255, 255))
         text_rect = text.get_rect(center=self.rect.center)

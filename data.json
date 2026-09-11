@@ -1,6 +1,7 @@
 {
     "path": "c:/users/user/music",
-    "fps": 120,
+    "fps": 60,
+    "unfocused_fps":40,
     "size":[
         500, 
         500
@@ -20,6 +21,8 @@
         "stop":["space"],
 
         "fixed":["`"],
+
+        "shuffle":["*"],
 
         "buff in game":"alt + f4"
     }
