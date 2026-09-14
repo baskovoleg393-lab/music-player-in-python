@@ -8,6 +8,8 @@
     "minimized_fps":10,
 
     "star_update_interval":0.05,
+
+    "seek step": 5,
     
     "size":[
         500, 
@@ -17,18 +19,21 @@
     "keys":{
         "need":["ctrl"],
 
-        "plus volume":["up"],
-        "minus volume":["down"],
+        "volume up":["up"],
+        "volume down":["down"],
 
-        "plus music":["right"],
-        "minus music":["left"],
+        "music forward":["right"],
+        "music back":["left"],
 
-        "plus playlist":["alt", "right"],
-        "minus playlist":["alt","left"],
+        "playlist forward":["alt", "right"],
+        "playlist back":["alt","left"],
 
-        "stop":["space"],
+        "seek forward":["page up"],
+        "seek back":["page down"],
 
-        "fixed":["`"],
+        "pause":["space"],
+
+        "repeat":["`"],
 
         "shuffle":["*"],
 

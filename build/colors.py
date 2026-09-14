@@ -45,8 +45,9 @@ class colors:
     dark_green = rgb(0, 100, 0, "dark green")
 
     blue = rgb(0, 0, 255, "blue")
-    light_blue = rgb(173, 216, 230, "light blue")
-    dark_blue = rgb(0, 0, 139, "dark blue")
+    light_blue = rgb(0, 200, 255, "light blue")
+    dark_blue = rgb(30, 30, 50, "dark blue")
+    dark_gray_blue = rgb(100, 100, 150, "dark gray-blue")
 
     yellow = rgb(255, 255, 0, "yellow")
     light_yellow = rgb(255, 255, 224, "light yellow")

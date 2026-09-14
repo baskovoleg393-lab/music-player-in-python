@@ -7,6 +7,8 @@ import pygame as pg
 import keyboard as key
 import time
 
+pg.init()
+
 LAYOUT_MAP = {
     "a": "ф", "b": "и", "c": "с", "d": "в", "e": "у", "f": "а", "g": "п", "h": "р",
     "i": "ш", "j": "о", "k": "л", "l": "д", "m": "ь", "n": "т", "o": "щ", "p": "з",
@@ -38,11 +40,13 @@ class Root:
         self.fps = fps
         self.events = []
         self.need_flips = True
-        self.time = 0
 
     def Start(self):
         self.screen = pg.display.set_mode(self.size, pg.RESIZABLE)
+        self.time = 0
+        self.mouse = pg.Vector2()
         while self.flag:
+            self.mouse = pg.Vector2(*pg.mouse.get_pos())
             self.time = time.time()
             self.events = pg.event.get()
 
@@ -60,6 +64,8 @@ class Root:
 
         pg.quit()
         return None
+    def Stop(self):
+        self.flag = False
 
 class Key:
     def __init__(self, key_name):
@@ -85,7 +91,7 @@ class Key:
         self.old_press = self.press
 
 class Button:
-    def __init__(self, x, y, w, h, text, color=colors.gray(), hover_color=colors.light_gray(), pressed_color=colors.blue()):
+    def __init__(self, x, y, w, h, text, color=colors.gray(), hover_color=colors.light_gray(), pressed_color=colors.blue(), size = 20):
         self.rect = pg.Rect(x, y, w, h)
         self.text = text
         self.color = color
@@ -93,12 +99,12 @@ class Button:
         self.pressed_color = pressed_color
         self.is_hover = False
         self.current_color = self.color
+        self.font = pg.font.Font(None, size)
 
     def draw(self, screen):
         self.current_color = (self.hover_color if not pg.mouse.get_pressed()[0] else self.pressed_color) if self.is_hover else self.color
         pg.draw.rect(screen, self.current_color, self.rect, border_radius=20)
-        font = pg.font.Font(None, 20)
-        text = font.render(self.text, True, (255, 255, 255))
+        text = self.font.render(self.text, True, colors.white())
         text_rect = text.get_rect(center=self.rect.center)
         screen.blit(text, text_rect)
     

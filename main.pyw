@@ -30,6 +30,8 @@ index_music = 0
 current_position = 0
 total_duration = 1
 
+repeat_mode = "no repeat"
+
 time_star = time.time()
 
 def Vx(x):
@@ -58,7 +60,6 @@ _text_cache = {}
 def render_text(font, text, color):
     key = (id(font), text, color)
     if key not in _text_cache:
-        print(key)
         _text_cache[key] = font.render(text, True, color)
     return _text_cache[key]
 
@@ -88,26 +89,32 @@ def update_music_list():
 update_music_list()
 
 key_need = Key(data["keys"]["need"])
-key_plus_volume = Key(data["keys"]["plus volume"])
-key_minus_volume = Key(data["keys"]["minus volume"])
-key_plus_music = Key(data["keys"]["plus music"])
-key_minus_music = Key(data["keys"]["minus music"])
-key_plus_playlist = Key(data["keys"]["plus playlist"])
-key_minus_playlist = Key(data["keys"]["minus playlist"])
-key_stop = Key(data["keys"]["stop"])
-key_fixed = Key(data["keys"]["fixed"])
+key_volume_up = Key(data["keys"]["volume up"])
+key_volume_down = Key(data["keys"]["volume down"])
+key_music_forward = Key(data["keys"]["music forward"])
+key_music_back = Key(data["keys"]["music back"])
+key_playlist_forward = Key(data["keys"]["playlist forward"])
+key_playlist_back = Key(data["keys"]["playlist back"])
+key_seek_forward = Key(data["keys"]["seek forward"])
+key_seek_back = Key(data["keys"]["seek back"])
+key_stop = Key(data["keys"]["pause"])
+key_repeat = Key(data["keys"]["repeat"])
 key_shuffle = Key(data["keys"]["shuffle"])
 
 current_volume = 0.5
 is_playing = False
 music_loaded = False
-fixed = False
+
 pos_in_button = False
 
+error_text = ""
+
 def load_and_play():
-    global music_loaded, is_playing, current_position, total_duration, seek_base
+    global music_loaded, is_playing, current_position, total_duration, seek_base, error_text
     if full_playlists and full_musics:
         try:
+            error_text = ""
+            pg.mixer.music.stop()
             music_path = os.path.join(path, full_playlists[index_playlist], full_musics[index_music])
             pg.mixer.music.load(music_path)
             pg.mixer.music.set_volume(current_volume)
@@ -120,12 +127,12 @@ def load_and_play():
             if total_duration <= 0:
                 total_duration = 1
         except Exception as e:
-            print(f"Error: {e}")
+            error_text = str(e)
             music_loaded = False
             is_playing = False
 
 def seek(position_seconds):
-    global current_position, seek_base, is_playing
+    global current_position, seek_base, is_playing, error_text
     
     if not music_loaded or not full_musics:
         return
@@ -133,6 +140,7 @@ def seek(position_seconds):
     position_seconds = max(0, min(position_seconds, total_duration))
     
     try:
+        error_text = ""
         music_path = os.path.join(path, full_playlists[index_playlist], full_musics[index_music])
         pg.mixer.music.load(music_path)
         pg.mixer.music.play(start=position_seconds)
@@ -141,17 +149,16 @@ def seek(position_seconds):
         seek_base = position_seconds  
         is_playing = True
     except Exception as e:
-        print(f"Seek error: {e}")
+        error_text = str(e)
 
 def draw_progress_bar(screen, rect, progress):
     x, y, w, h = rect.x, rect.y, rect.w, rect.h
-    pg.draw.rect(screen, (30, 30, 50), (x, y, w, h), border_radius=20)
-    pg.draw.rect(screen, (0, 200, 255), (x, y, w * progress, h), border_radius=20)
-    print(progress)
-    pg.draw.rect(screen, (100, 100, 150), (x, y, w, h), 5, border_radius=20)
+    pg.draw.rect(screen, colors.dark_blue(), (x, y, w, h), border_radius=20)
+    pg.draw.rect(screen, colors.light_blue(), (x, y, w * progress, h), border_radius=20)
+    pg.draw.rect(screen, colors.dark_gray_blue(), (x, y, w, h), 5, border_radius=20)
 
 def handle_action(action):
-    global index_playlist, index_music, current_volume, is_playing, music_loaded, current_position, fixed, total_duration
+    global index_playlist, index_music, current_volume, is_playing, music_loaded, current_position, total_duration, repeat_mode
     match action:
         case "vol up":
             current_volume = min(1.0, current_volume + 0.1)
@@ -168,11 +175,9 @@ def handle_action(action):
                 is_playing = True
         case "music up":
             index_music = (index_music + 1) % len(full_musics)
-            fixed = False
             load_and_play()
         case "music down":
             index_music = (index_music - 1) % len(full_musics)
-            fixed = False
             load_and_play()
         case "playlist up":
             index_playlist = (index_playlist + 1) % len(full_playlists)
@@ -186,8 +191,14 @@ def handle_action(action):
             update_music_list()
             if full_musics:
                 load_and_play()
-        case "fixed":
-            fixed = not fixed    
+        case "seek up":
+            seek(current_position + data["seek step"])
+        case "seek down":
+            seek(current_position - data["seek step"])
+        case "repeat":
+            if repeat_mode == "no repeat":repeat_mode = "music repeat"
+            elif repeat_mode == "music repeat":repeat_mode = "playlist repeat"
+            else:repeat_mode = "no repeat"
         case "shuffle":
             shuffle(full_musics)       
             load_and_play()
@@ -199,71 +210,82 @@ def update_gui():
     progress_bar_rect = pg.Rect(Vx(93), Vy(472), Vx(814), Vy(67))
 
     background = pg.Surface(SIZE)
-    pg.draw.rect(background, (0, 0, 0, 50), (Vx(43), Vy(79), Vx(914), Vy(870)), border_radius=50)
-    pg.draw.rect(background, (100, 100, 150), (Vx(43), Vy(79), Vx(914), Vy(870)), 2, border_radius=50)
 
     buttons = []
     btn_width = Vx(63)
     btn_height = Vy(63)
+    size = max(20, Vx(20))
 
-    buttons.append(Button(Vx(443), Vy(645), Vx(114), Vy(63), "pause"))
-    buttons.append(Button(Vx(433), Vy(342), btn_width, btn_height, "<"))
-    buttons.append(Button(Vx(504), Vy(342), btn_width, btn_height, ">"))
-    buttons.append(Button(Vx(590), Vy(566), btn_width, btn_height, "+"))
-    buttons.append(Button(Vx(360), Vy(566), btn_width, btn_height, "-"))
-    buttons.append(Button(Vx(576), Vy(342), btn_width, btn_height, ">>"))
-    buttons.append(Button(Vx(361), Vy(342), btn_width, btn_height, "<<"))
-    buttons.append(Button(Vx(443), Vy(750), Vx(114), Vy(63), "fixed"))
-    buttons.append(Button(W-Vx(160), Vy(110), Vx(71), Vy(79), "-"))
-    buttons.append(Button(Vx(443), Vy(855), Vx(114), Vy(63), "shuffle"))
+    buttons.append(Button(Vx(443), Vy(645), Vx(114), btn_height, "pause", size=size))
+    buttons.append(Button(Vx(433), Vy(342), btn_width, btn_height, "<", size=size))
+    buttons.append(Button(Vx(504), Vy(342), btn_width, btn_height, ">", size=size))
+    buttons.append(Button(Vx(590), Vy(566), btn_width, btn_height, "+", size=size))
+    buttons.append(Button(Vx(360), Vy(566), btn_width, btn_height, "-", size=size))
+    buttons.append(Button(Vx(576), Vy(342), btn_width, btn_height, ">>", size=size))
+    buttons.append(Button(Vx(361), Vy(342), btn_width, btn_height, "<<", size=size))
+    buttons.append(Button(Vx(443), Vy(750), Vx(114), btn_height, "repeat", size=size))
+    buttons.append(Button(Vx(443), Vy(855), Vx(114), btn_height, "shuffle", size=size))
 
     font = pg.font.Font(None, Vy(89))
     small_font = pg.font.Font(None, Vy(58))
 
 def update():
-    global is_playing, index_music, W, H, SIZE, current_position, background, is_rendering, star_surface, time_star, progress_bar_rect
+    global is_playing, index_music, W, H, SIZE, current_position, is_rendering, star_surface, time_star, progress_bar_rect, full_playlists
 
-    for key in [key_plus_volume, key_minus_volume, key_minus_music,
-                key_plus_music, key_minus_playlist, key_plus_playlist,
-                key_stop, key_need, key_fixed, key_shuffle]:
+    for key in [key_volume_up, key_volume_down, key_music_back,
+                key_music_forward, key_playlist_forward, 
+                key_playlist_back, key_seek_forward, key_seek_back,
+                key_stop, key_need, key_repeat, key_shuffle]:
         key.update()
 
     is_active = key_need.press or pg.key.get_focused()
-    
-    if key_plus_volume.down and is_active:
-        handle_action("vol up")
-    if key_minus_volume.down and is_active:
-        handle_action("vol down")
-    if key_stop.down and is_active:
-        handle_action("pause")
-    if key_plus_music.down and full_musics and is_active:
-        handle_action("music up")
-    if key_minus_music.down and full_musics and is_active:
-        handle_action("music down")
-    if key_plus_playlist.down and full_playlists and is_active:
-        handle_action("playlist up")
-    if key_minus_playlist.down and full_playlists and is_active:
-        handle_action("playlist down")
-    if key_fixed.down and full_playlists and is_active:
-        handle_action("fixed")    
-    if key_shuffle.down and full_playlists and is_active:
-        handle_action("shuffle")
+
+    if is_active:
+        if key_volume_up.down:
+            handle_action("vol up")
+        if key_volume_down.down:
+            handle_action("vol down")
+        if key_stop.down:
+            handle_action("pause")
+        if key_music_forward.down and full_musics:
+            handle_action("music up")
+        if key_music_back.down and full_musics:
+            handle_action("music down")
+        if key_playlist_forward.down and full_playlists:
+            handle_action("playlist up")
+        if key_playlist_back.down and full_playlists:
+            handle_action("playlist down")
+        if key_seek_forward.down and full_playlists:
+            handle_action("seek up")
+        if key_seek_back.down and full_playlists:
+            handle_action("seek down")
+        if key_repeat.down and full_playlists:
+            handle_action("repeat")    
+        if key_shuffle.down and full_playlists:
+            handle_action("shuffle")
 
     if music_loaded and is_playing and not pg.mixer.music.get_busy():
         is_playing = False
-        current_position = total_duration
-        if full_musics and not fixed:
+        #current_position = total_duration
+        if full_musics and repeat_mode == "no repeat":
+            index_music = (index_music + 1)
+            if index_music > len(full_musics)-1:
+                index_music = 0
+                handle_action("playlist up")
+        elif full_musics and repeat_mode == "music repeat":
+            pass
+        elif full_playlists and repeat_mode == "playlist repeat":
             index_music = (index_music + 1) % len(full_musics)
         load_and_play()
-    
+
     if is_playing:
         pos = max(0, pg.mixer.music.get_pos() / 1000)
         current_position = min(pos + seek_base, total_duration)
     
     for event in root.events:
         if event.type == pg.QUIT:
-            pg.quit()
-            exit()
+            root.Stop()
+            return
 
         if event.type == 32779: #свернуть
             is_rendering = False
@@ -278,6 +300,10 @@ def update():
             if progress_bar_rect.collidepoint(event.pos):
                 click_x = event.pos[0] - progress_bar_rect.x
                 seek((click_x / progress_bar_rect.width) * total_duration)
+
+        if event.type == pg.MOUSEMOTION:
+            if progress_bar_rect.collidepoint(event.pos):
+                pass
 
         if buttons[0].handle_event(event):
             handle_action("pause")
@@ -301,13 +327,14 @@ def update():
             handle_action("playlist down")
 
         if buttons[7].handle_event(event) and full_playlists:
-            handle_action("fixed")
+            handle_action("repeat")
 
-        if buttons[8].handle_event(event):
-            pg.display.iconify()
-
-        if buttons[9].handle_event(event) and full_playlists:
+        if buttons[8].handle_event(event) and full_playlists:
             handle_action("shuffle")
+
+    minutes = int(current_position // 60)
+    seconds = int(current_position % 60)
+    vol_text = f"{int(current_volume * 100)}%"
 
     """
     render_text(small_font, full_playlists[index_playlist], (100, 200, 255))
@@ -326,10 +353,6 @@ def update():
     if not is_rendering:
         root.fps = data["minimized_fps"]
         return
-
-    minutes = int(current_position // 60)
-    seconds = int(current_position % 60)
-    vol_text = f"{int(current_volume * 100)}%"
     
     root.screen.blit(background, (0, 0))
     root.screen.blit(star_surface, (0, 0))
@@ -338,42 +361,42 @@ def update():
         time_star = root.time
         
     if full_playlists:
-        text = render_text(small_font, full_playlists[index_playlist], (100, 200, 255))
+        text = render_text(small_font, full_playlists[index_playlist], colors.light_blue())
         x_playlist = (W - small_font.size(full_playlists[index_playlist])[0]) // 2
         root.screen.blit(text, (x_playlist, Vy(145)))
     else:
-        text = render_text(font, "no playlist", (255, 100, 100))
+        text = render_text(font, "no playlist", colors.light_red())
         x_playlist = (W - font.size("no playlist")[0]) // 2
         root.screen.blit(text, (x_playlist, Vy(211)))
         return
     
     if full_musics:
-        text = render_text(font, full_musics[index_music].rsplit(".", 1)[0], (255, 255, 255))
+        text = render_text(font, full_musics[index_music].rsplit(".", 1)[0], colors.white())
         x_music = (W - font.size(full_musics[index_music].rsplit('.', 1)[0])[0]) //2
         root.screen.blit(text, (x_music, Vy(211)))
         
         vol_text = f"{int(current_volume * 100)}%"
-        text = render_text(font, vol_text, (200, 255, 200))
+        text = render_text(font, vol_text, colors.light_green())
         x_vol = (W - font.size(vol_text)[0]) // 2
         root.screen.blit(text, (x_vol, Vy(566)))
 
         progress = current_position / total_duration if total_duration > 0 else 0
         draw_progress_bar(root.screen, progress_bar_rect, min(progress, 1.0))
         
-        time_text = render_text(small_font, f"{minutes:02d}:{seconds:02d}", (200, 200, 200))
+        time_text = render_text(small_font, f"{minutes:02d}:{seconds:02d}", colors.light_gray())
         root.screen.blit(time_text, (Vx(93), Vy(426)))
 
         minutes = int(total_duration // 60)
         seconds = int(total_duration % 60)
-        total_time_text = render_text(small_font, f"{minutes:02d}:{seconds:02d}", (200, 200, 200))
+        total_time_text = render_text(small_font, f"{minutes:02d}:{seconds:02d}", colors.light_gray())
         root.screen.blit(total_time_text, (W - Vx(150), Vy(426)))
     else:
-        text = render_text(font, "no music", (255, 200, 100))
+        text = render_text(font, "no music", colors.light_yellow())
         x_music = (W - font.size("no music")[0]) // 2
         root.screen.blit(text, (x_music, Vy(211)))
     
     pos_in_button = False
-    buttons[7].text = "fixed" if not fixed else "unfixed"   
+     
     buttons[0].text = "unpause" if not is_playing else "pause"
     for btn in buttons:
         btn.draw(root.screen)
@@ -381,10 +404,13 @@ def update():
             pos_in_button = True
 
     if pg.mouse.get_focused():
-        if pos_in_button:
+        if pos_in_button or progress_bar_rect.collidepoint(root.mouse):
             root.screen.blit(cursor_load_screen, pg.mouse.get_pos())
         else:
             root.screen.blit(cursor_static_screen, pg.mouse.get_pos())
+    
+    root.screen.blit(render_text(font, f"debug: {error_text if error_text else None}", colors.white())) #для откладки при комитк убрат
+    
 update_gui()
 if __name__ == "__main__":
     if full_musics:
@@ -393,4 +419,4 @@ if __name__ == "__main__":
     root = Root(main=update, size=SIZE, fps=data["fps"])
 
     if err:=root.Start():
-        print(err.args)
+        raise err
