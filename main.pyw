@@ -5,6 +5,9 @@ import os
 import json
 from random import randint, shuffle, choice
 import time 
+import signal
+
+signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 pg.init()
 pg.mixer.init()
@@ -63,30 +66,39 @@ def render_text(font, text, color):
         _text_cache[key] = font.render(text, True, color)
     return _text_cache[key]
 
-def update_playlist():
-    global full_playlists
+def update_playlist(is_start = False):
+    global full_playlists, index_playlist
     if os.path.exists(path):
-        full_playlists = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
-        full_playlists.sort()
+        try:
+            full_playlists = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
+            full_playlists.sort()
+            if is_start:
+                index_playlist = full_playlists.index(data["last_playlist"])
+        except (PermissionError, FileNotFoundError):
+            full_playlists = []
+        except ValueError:
+            pass
     else:
         full_playlists = []
-    full_playlists.sort()
 
-update_playlist()
 
-def update_music_list():
-    global full_musics
-    update_playlist()
+def update_music_list(is_start = False):
+    global full_musics, index_music
+    update_playlist(is_start)
     if full_playlists:
         try:
             full_musics = [f for f in os.listdir(path + full_playlists[index_playlist]) if f.endswith(('.mp3', '.wav', '.ogg'))]
             full_musics.sort()
-        except PermissionError:
+            if is_start:
+                index_music = full_musics.index(data["last_music"])
+        except (PermissionError, FileNotFoundError):
             full_musics = []
+        except ValueError:
+            pass
     else:
         full_musics = []
 
-update_music_list()
+update_music_list(data["last_playlist"] and data["last_music"])
 
 key_need = Key(data["keys"]["need"])
 key_volume_up = Key(data["keys"]["volume up"])
@@ -126,6 +138,9 @@ def load_and_play():
             total_duration = pg.mixer.Sound(music_path).get_length()
             if total_duration <= 0:
                 total_duration = 1
+
+            data["last_playlist"] = full_playlists[index_playlist]
+            data["last_music"] = full_musics[index_music]
         except Exception as e:
             error_text = str(e)
             music_loaded = False
@@ -134,7 +149,7 @@ def load_and_play():
 def seek(position_seconds):
     global current_position, seek_base, is_playing, error_text
     
-    if not music_loaded or not full_musics:
+    if not all([full_musics, music_loaded]):
         return
     
     position_seconds = max(0, min(position_seconds, total_duration))
@@ -420,3 +435,5 @@ if __name__ == "__main__":
 
     if err:=root.Start():
         raise err
+    with open("data.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
